@@ -1,0 +1,747 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Room Booking</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--c-primary:#1a73e8;--c-primary-dark:#1557b0;--c-success:#2e7d32;--c-danger:#c62828;
+--c-warn:#f57c00;--c-bg:#f8f9fa;--c-card:#fff;--c-border:#e0e0e0;--c-text:#212121;
+--c-muted:#757575;--c-foosball:#2e7d32;--c-ping:#1565c0;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--c-bg);color:var(--c-text);font-size:14px;min-height:100vh}
+.hidden{display:none!important}
+/* Login */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a237e 0%,#283593 50%,#1565c0 100%)}
+.login-card{background:#fff;border-radius:20px;padding:40px;text-align:center;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.login-card h1{font-size:22px;font-weight:700;margin-bottom:8px;color:#1a237e}
+.login-card p{color:#757575;font-size:13px;margin-bottom:28px}
+.login-card .icons{font-size:48px;margin-bottom:20px}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 20px;background:#fff;border:1.5px solid #ddd;border-radius:10px;cursor:pointer;font-size:15px;font-weight:500;transition:all .2s}
+.google-btn:hover{background:#f8f9fa;border-color:#aaa}
+.google-btn .g-icon{width:20px;height:20px;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="%23EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="%234285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="%23FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="%2334A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>') center/cover no-repeat}
+/* Top bar */
+.topbar{background:#1a237e;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar h2{font-size:16px;font-weight:600}
+.user-chip{display:flex;align-items:center;gap:8px;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#3949ab;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.logout-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+/* Tabs */
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--c-border);overflow-x:auto}
+.tab{flex:1;min-width:80px;padding:12px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--c-muted);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab.active{color:#1a237e;border-color:#1a237e}
+/* Main content */
+.main{padding:12px;max-width:900px;margin:0 auto}
+/* Game selector */
+.game-tabs{display:flex;gap:10px;margin-bottom:14px}
+.game-tab{flex:1;padding:14px 10px;border-radius:12px;border:2px solid var(--c-border);background:#fff;cursor:pointer;text-align:center;transition:all .2s;font-size:13px;font-weight:500}
+.game-tab.foosball.active{border-color:var(--c-foosball);background:#e8f5e9;color:var(--c-foosball)}
+.game-tab.ping.active{border-color:var(--c-ping);background:#e3f2fd;color:var(--c-ping)}
+.game-tab-icon{font-size:28px;margin-bottom:6px}
+/* Week nav */
+.week-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;padding:10px 14px;margin-bottom:12px;border:1px solid var(--c-border)}
+.week-nav button{background:none;border:1.5px solid var(--c-border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;transition:all .2s}
+.week-nav button:hover{background:var(--c-bg)}
+.week-label{font-weight:600;font-size:14px;color:#1a237e}
+/* Day slots */
+.day-block{background:#fff;border-radius:12px;margin-bottom:10px;border:1px solid var(--c-border);overflow:hidden}
+.day-header{padding:10px 14px;font-weight:600;font-size:13px;background:#f0f4ff;color:#1a237e;display:flex;align-items:center;justify-content:space-between}
+.day-badge{font-size:11px;font-weight:500;color:#5c6bc0;background:#e8eaf6;padding:2px 8px;border-radius:20px}
+.slots-grid{padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.slot{border-radius:8px;padding:8px;text-align:center;border:1.5px solid var(--c-border);cursor:pointer;transition:all .15s;background:#fff}
+.slot:hover:not(.full):not(.blocked){transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.slot.free{border-color:#bdbdbd}
+.slot.partial{border-color:#f57c00;background:#fff8e1}
+.slot.full{background:#ffebee;border-color:#ef9a9a;cursor:not-allowed;opacity:.8}
+.slot.blocked{background:#f5f5f5;border-color:#e0e0e0;cursor:not-allowed;opacity:.6}
+.slot.mine{border-color:#1a73e8;background:#e3f2fd}
+.slot-time{font-size:12px;font-weight:600;color:#1a237e}
+.slot-count{font-size:10px;margin-top:2px;color:var(--c-muted)}
+.slot-names{font-size:10px;margin-top:3px;color:#37474f;line-height:1.4}
+.slot-status{font-size:10px;margin-top:2px;font-weight:500}
+.status-free{color:#388e3c}
+.status-partial{color:#f57c00}
+.status-full{color:#c62828}
+.status-blocked{color:#757575}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-header h3{font-size:16px;font-weight:600}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--c-muted);line-height:1}
+.modal-body{padding:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--c-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group select,.form-group input{width:100%;padding:10px;border:1.5px solid var(--c-border);border-radius:8px;font-size:14px;outline:none;transition:border-color .2s}
+.form-group select:focus,.form-group input:focus{border-color:#1a73e8}
+.players-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.player-chip{padding:8px 10px;border:1.5px solid var(--c-border);border-radius:8px;cursor:pointer;font-size:13px;text-align:center;transition:all .15s;background:#fff}
+.player-chip.selected{background:#e3f2fd;border-color:#1a73e8;color:#1a237e;font-weight:500}
+.player-chip:hover:not(.selected){background:#f5f5f5}
+.btn{padding:11px 20px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;width:100%}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-danger{background:#c62828;color:#fff}
+.btn-danger:hover{background:#b71c1c}
+.btn-secondary{background:#f5f5f5;color:#333;border:1.5px solid var(--c-border)}
+.info-box{background:#e3f2fd;border-radius:8px;padding:10px 12px;font-size:12px;color:#1565c0;margin-bottom:14px;line-height:1.5}
+.warn-box{background:#fff8e1;border-radius:8px;padding:10px 12px;font-size:12px;color:#e65100;margin-bottom:14px}
+.booked-list{margin-top:12px}
+.booked-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8f9fa;border-radius:8px;margin-bottom:6px;font-size:13px}
+.booked-item-name{font-weight:500}
+.booked-item-time{color:var(--c-muted);font-size:11px}
+.cancel-small{background:none;border:1px solid #ef9a9a;color:#c62828;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px}
+/* Reports section */
+.report-form{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--c-border)}
+/* Log section */
+.log-list{background:#fff;border-radius:12px;border:1px solid var(--c-border);overflow:hidden}
+.log-item{padding:10px 14px;border-bottom:1px solid var(--c-border);font-size:12px;display:flex;align-items:flex-start;gap:10px}
+.log-item:last-child{border-bottom:none}
+.log-time{color:var(--c-muted);white-space:nowrap;font-family:monospace;font-size:11px;min-width:90px}
+.log-type{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.log-type.book{background:#e8f5e9;color:#2e7d32}
+.log-type.cancel{background:#ffebee;color:#c62828}
+.log-type.block{background:#fff3e0;color:#e65100}
+.log-type.login{background:#e3f2fd;color:#1565c0}
+.log-type.report{background:#f3e5f5;color:#6a1b9a}
+.log-msg{flex:1;color:var(--c-text)}
+/* Admin section */
+.admin-section{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--c-border);margin-bottom:12px}
+.admin-section h3{font-size:14px;font-weight:600;margin-bottom:12px;color:#1a237e}
+.user-list-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.user-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f8f9fa;border-radius:8px;font-size:13px}
+.remove-btn{background:none;border:none;color:#c62828;cursor:pointer;font-size:16px;line-height:1;padding:2px}
+.section-title{font-size:16px;font-weight:700;color:#1a237e;margin-bottom:12px}
+/* Block slot */
+.block-form{display:flex;gap:8px;flex-wrap:wrap}
+.block-form input,.block-form select{flex:1;min-width:100px;padding:9px;border:1.5px solid var(--c-border);border-radius:8px;font-size:13px}
+.block-form button{padding:9px 14px;background:#e65100;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+/* My bookings */
+.my-booking-card{background:#fff;border:1.5px solid #90caf9;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.my-booking-info h4{font-size:14px;font-weight:600}
+.my-booking-info p{font-size:12px;color:var(--c-muted);margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-foosball{background:#e8f5e9;color:#2e7d32}
+.badge-ping{background:#e3f2fd;color:#1565c0}
+/* Report card */
+.report-card{background:#fff;border:1px solid var(--c-border);border-radius:10px;padding:12px;margin-bottom:8px}
+.report-card h4{font-size:13px;font-weight:600}
+.report-card p{font-size:12px;color:var(--c-muted);margin-top:4px;line-height:1.5}
+.report-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 7px;border-radius:20px;background:#f5f5f5;color:var(--c-muted)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+<div class="login-card">
+<div class="icons">🏓⚽</div>
+<h1>Game Room</h1>
+<p>Prenota i tuoi slot per calcio balilla e ping pong</p>
+<button class="google-btn" onclick="showNameSelect()">
+<div class="g-icon"></div>
+<span>Accedi con Google</span>
+</button>
+<div id="name-select" class="hidden" style="margin-top:16px">
+<p style="font-size:12px;color:#999;margin-bottom:8px">Seleziona il tuo nome</p>
+<select id="login-name" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:12px">
+<option value="">-- Scegli il tuo nome --</option>
+</select>
+<button class="google-btn" style="background:#1a237e;color:#fff;border-color:#1a237e" onclick="doLogin()">Entra</button>
+</div>
+</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="hidden">
+<div class="topbar">
+<div class="topbar-left">
+<span style="font-size:22px">🏓</span>
+<h2>Game Room</h2>
+</div>
+<div class="user-chip">
+<div class="avatar" id="user-avatar">?</div>
+<span id="user-name-display" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+<button class="logout-btn" onclick="doLogout()">Esci</button>
+</div>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('booking')">📅 Prenota</div>
+<div class="tab" onclick="showTab('mybookings')">👤 Mie</div>
+<div class="tab" onclick="showTab('reports')">🚨 Segnala</div>
+<div class="tab" onclick="showTab('log')">📋 Log</div>
+<div class="tab" id="admin-tab" onclick="showTab('admin')">⚙️ Admin</div>
+</div>
+
+<!-- BOOKING TAB -->
+<div id="tab-booking" class="main">
+<div class="game-tabs">
+<div class="game-tab foosball active" onclick="selectGame('foosball',this)">
+<div class="game-tab-icon">⚽</div>
+<div>Calcio Balilla</div>
+</div>
+<div class="game-tab ping" onclick="selectGame('ping',this)">
+<div class="game-tab-icon">🏓</div>
+<div>Ping Pong</div>
+</div>
+</div>
+<div class="week-nav">
+<button onclick="changeWeek(-1)">◀ Prec</button>
+<span class="week-label" id="week-label"></span>
+<button onclick="changeWeek(1)">Succ ▶</button>
+</div>
+<div id="days-container"></div>
+</div>
+
+<!-- MY BOOKINGS TAB -->
+<div id="tab-mybookings" class="main hidden">
+<div class="section-title">Le mie prenotazioni</div>
+<div id="my-bookings-list"></div>
+</div>
+
+<!-- REPORTS TAB -->
+<div id="tab-reports" class="main hidden">
+<div class="section-title">Segnalazioni</div>
+<div class="report-form" style="margin-bottom:14px">
+<h3 style="font-size:14px;font-weight:600;margin-bottom:14px;color:#1a237e">Nuova segnalazione</h3>
+<div class="form-group">
+<label>Dispositivo</label>
+<select id="rep-device">
+<option value="Calcio Balilla">⚽ Calcio Balilla</option>
+<option value="Ping Pong">🏓 Ping Pong</option>
+</select>
+</div>
+<div class="form-group">
+<label>Giorno di riferimento</label>
+<input type="date" id="rep-date">
+</div>
+<div class="form-group">
+<label>Orario di riferimento</label>
+<select id="rep-time">
+<option value="12:30">12:30</option>
+<option value="12:50">12:50</option>
+<option value="13:10">13:10</option>
+<option value="17:00">17:00</option>
+<option value="17:20">17:20</option>
+<option value="17:40">17:40</option>
+<option value="18:00">18:00</option>
+<option value="18:20">18:20</option>
+<option value="18:40">18:40</option>
+</select>
+</div>
+<div class="form-group">
+<label>Descrizione</label>
+<textarea id="rep-text" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Descrivi il problema..."></textarea>
+</div>
+<button class="btn btn-primary" onclick="submitReport()">Invia segnalazione</button>
+</div>
+<div class="section-title" style="margin-top:16px">Segnalazioni ricevute</div>
+<div id="reports-list"></div>
+</div>
+
+<!-- LOG TAB -->
+<div id="tab-log" class="main hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+<div class="section-title" style="margin-bottom:0">Log attività</div>
+<button onclick="clearLog()" style="background:none;border:1px solid #ef9a9a;color:#c62828;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px">Svuota log</button>
+</div>
+<div class="log-list" id="log-list"></div>
+</div>
+
+<!-- ADMIN TAB -->
+<div id="tab-admin" class="main hidden">
+<div class="section-title">Pannello Admin</div>
+<div class="admin-section">
+<h3>👥 Utenti abilitati</h3>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<input id="new-user-input" style="flex:1;padding:9px;border:1.5px solid #ddd;border-radius:8px;font-size:13px" placeholder="Aggiungi nome utente">
+<button onclick="addUser()" style="padding:9px 14px;background:#1a73e8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">Aggiungi</button>
+</div>
+<div class="user-list-grid" id="user-list-admin"></div>
+</div>
+<div class="admin-section">
+<h3>🚫 Blocca slot</h3>
+<p style="font-size:12px;color:var(--c-muted);margin-bottom:10px">Blocca uno slot per eventi speciali</p>
+<div class="block-form">
+<input type="date" id="block-date">
+<select id="block-game">
+<option value="foosball">Calcio Balilla</option>
+<option value="ping">Ping Pong</option>
+<option value="both">Entrambi</option>
+</select>
+<select id="block-time">
+<option value="12:30">12:30</option>
+<option value="12:50">12:50</option>
+<option value="13:10">13:10</option>
+<option value="17:00">17:00</option>
+<option value="17:20">17:20</option>
+<option value="17:40">17:40</option>
+<option value="18:00">18:00</option>
+<option value="18:20">18:20</option>
+<option value="18:40">18:40</option>
+</select>
+<input id="block-reason" placeholder="Motivo" style="min-width:120px">
+<button onclick="blockSlot()">Blocca</button>
+</div>
+<div id="blocked-list" style="margin-top:10px"></div>
+</div>
+<div class="admin-section">
+<h3>📊 Statistiche</h3>
+<div id="stats-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"></div>
+</div>
+</div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay hidden" id="booking-modal" onclick="closeModal(event)">
+<div class="modal">
+<div class="modal-header">
+<h3 id="modal-title">Prenota slot</h3>
+<button class="close-btn" onclick="closeModal()">×</button>
+</div>
+<div class="modal-body" id="modal-body"></div>
+</div>
+</div>
+
+<script>
+const ADMIN_USER = 'Admin';
+const SLOTS_LUNCH = ['12:30','12:50','13:10'];
+const SLOTS_EVENING = ['17:00','17:20','17:40','18:00','18:20','18:40'];
+const ALL_SLOTS = [...SLOTS_LUNCH,...SLOTS_EVENING];
+const MAX_SLOTS_PER_DAY = 2;
+
+let state = {
+  currentUser: null,
+  currentGame: 'foosball',
+  weekOffset: 0,
+  bookings: {},
+  blocked: [],
+  users: ['Marco','Luca','Sara','Giulia','Andrea','Matteo','Elena','Francesco','Valentina','Roberto','Admin'],
+  logs: [],
+  reports: []
+};
+
+function addLog(type, msg){
+  const now = new Date();
+  const ts = now.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}) + ' ' + now.toTimeString().slice(0,5);
+  state.logs.unshift({type, msg, ts});
+  if(state.logs.length > 200) state.logs = state.logs.slice(0,200);
+}
+
+function showNameSelect(){
+  document.getElementById('name-select').classList.remove('hidden');
+  const sel = document.getElementById('login-name');
+  sel.innerHTML = '<option value="">-- Scegli il tuo nome --</option>';
+  state.users.forEach(u => sel.innerHTML += `<option value="${u}">${u}</option>`);
+}
+
+function doLogin(){
+  const name = document.getElementById('login-name').value;
+  if(!name){alert('Seleziona il tuo nome'); return;}
+  state.currentUser = name;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('user-avatar').textContent = name[0].toUpperCase();
+  if(name !== ADMIN_USER) document.getElementById('admin-tab').classList.add('hidden');
+  addLog('login', `${name} ha effettuato l'accesso`);
+  renderBookingTab();
+  renderAdminStats();
+}
+
+function doLogout(){
+  addLog('login', `${state.currentUser} ha effettuato il logout`);
+  state.currentUser = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('name-select').classList.add('hidden');
+}
+
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const tabs=['booking','mybookings','reports','log','admin'];
+    t.classList.toggle('active', tabs[i]===tab);
+  });
+  ['booking','mybookings','reports','log','admin'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('hidden', t!==tab);
+  });
+  if(tab==='mybookings') renderMyBookings();
+  if(tab==='log') renderLog();
+  if(tab==='reports') renderReports();
+  if(tab==='admin'){renderAdminUsers(); renderBlockedSlots(); renderAdminStats();}
+}
+
+function selectGame(game, el){
+  state.currentGame = game;
+  document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderBookingTab();
+}
+
+function getMonday(offset=0){
+  const today = new Date();
+  const day = today.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  const mon = new Date(today);
+  mon.setDate(today.getDate() + diff + offset*7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function changeWeek(dir){
+  const newOff = state.weekOffset + dir;
+  if(newOff < 0 || newOff > 1) return;
+  state.weekOffset = newOff;
+  renderBookingTab();
+}
+
+function dateKey(d){ return d.toISOString().slice(0,10); }
+function slotKey(game,date,time){ return `${game}|${date}|${time}`; }
+
+function getSlotBookings(game,date,time){
+  const k = slotKey(game,date,time);
+  return state.bookings[k] || [];
+}
+
+function isBlocked(game,date,time){
+  return state.blocked.some(b =>
+    b.date===date && b.time===time && (b.game==='both'||b.game===game)
+  );
+}
+
+function getUserDayCount(user, game, date){
+  return ALL_SLOTS.filter(t => {
+    const bk = getSlotBookings(game, date, t);
+    return bk.some(b => b.user === user);
+  }).length;
+}
+
+function renderBookingTab(){
+  const mon = getMonday(state.weekOffset);
+  const days = [];
+  for(let i=0;i<5;i++){
+    const d = new Date(mon);
+    d.setDate(mon.getDate()+i);
+    days.push(d);
+  }
+  const weekEnd = new Date(days[4]);
+  weekEnd.setDate(weekEnd.getDate()+1);
+  const opts = {day:'2-digit',month:'2-digit'};
+  document.getElementById('week-label').textContent =
+    `Sett. ${mon.toLocaleDateString('it-IT',opts)} – ${weekEnd.toLocaleDateString('it-IT',opts)}`;
+
+  const dayNames = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì'];
+  let html = '';
+  days.forEach((d,i)=>{
+    const dk = dateKey(d);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isPast = d < today;
+    html += `<div class="day-block">
+      <div class="day-header">
+        <span>${dayNames[i]} ${d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'})}</span>
+        ${isPast?'<span class="day-badge">passato</span>':''}
+      </div>
+      <div style="padding:4px 10px 0;font-size:10px;font-weight:600;color:#9e9e9e;text-transform:uppercase;letter-spacing:.5px">Pausa pranzo</div>
+      <div class="slots-grid">`;
+    SLOTS_LUNCH.forEach(t=>{ html += renderSlotHTML(dk,t,isPast,d); });
+    html += `</div>
+      <div style="padding:4px 10px 0;font-size:10px;font-weight:600;color:#9e9e9e;text-transform:uppercase;letter-spacing:.5px">Post lavoro</div>
+      <div class="slots-grid">`;
+    SLOTS_EVENING.forEach(t=>{ html += renderSlotHTML(dk,t,isPast,d); });
+    html += `</div></div>`;
+  });
+  document.getElementById('days-container').innerHTML = html;
+}
+
+function renderSlotHTML(dk, t, isPast, d){
+  const bks = getSlotBookings(state.currentGame, dk, t);
+  const blocked = isBlocked(state.currentGame, dk, t);
+  const max = 4;
+  const count = bks.length;
+  const full = count >= max;
+  const partial = count > 0 && !full;
+  const hasMine = bks.some(b=>b.user===state.currentUser);
+
+  let cls = 'slot ';
+  if(blocked) cls+='blocked';
+  else if(full) cls+='full';
+  else if(hasMine) cls+='mine';
+  else if(partial) cls+='partial';
+  else cls+='free';
+
+  const clickable = !isPast && !blocked && !full;
+  const onclick = clickable ? `onclick="openSlot('${dk}','${t}')"` : '';
+
+  let statusText = '';
+  if(blocked){statusText='<div class="slot-status status-blocked">Bloccato</div>';}
+  else if(full){statusText='<div class="slot-status status-full">Completo</div>';}
+  else if(hasMine){statusText='<div class="slot-status" style="color:#1a73e8">✓ Prenotato</div>';}
+  else if(partial){statusText='<div class="slot-status status-partial">'+count+'/'+max+' posti</div>';}
+  else{statusText='<div class="slot-status status-free">Libero</div>';}
+
+  const names = bks.length>0 ? `<div class="slot-names">${bks.map(b=>b.user.split(' ')[0]).join(', ')}</div>` : '';
+
+  return `<div class="${cls}" ${onclick}>
+    <div class="slot-time">${t}</div>
+    ${statusText}${names}
+  </div>`;
+}
+
+function openSlot(date, time){
+  const bks = getSlotBookings(state.currentGame, date, time);
+  const dayCount = getUserDayCount(state.currentUser, state.currentGame, date);
+  const hasMine = bks.some(b=>b.user===state.currentUser);
+  const gameLabel = state.currentGame==='foosball'?'⚽ Calcio Balilla':'🏓 Ping Pong';
+  const dateFormatted = new Date(date+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long'});
+
+  document.getElementById('modal-title').textContent = `${gameLabel} — ${time}`;
+
+  let body = `<div class="info-box">📅 ${dateFormatted}</div>`;
+
+  if(bks.length > 0){
+    body += `<div class="form-group"><label>Già prenotati (${bks.length}/4)</label><div class="booked-list">`;
+    bks.forEach(b=>{
+      const canCancel = b.user === state.currentUser;
+      body += `<div class="booked-item">
+        <div>
+          <div class="booked-item-name">${b.user}</div>
+          <div class="booked-item-time">${b.for2?'Coppia (2)':'Quattro (4)'}</div>
+        </div>
+        ${canCancel?`<button class="cancel-small" onclick="cancelBooking('${date}','${time}','${b.user}')">Cancella</button>`:''}
+      </div>`;
+    });
+    body += `</div></div>`;
+  }
+
+  if(hasMine){
+    body += `<div class="warn-box">✓ Hai già prenotato questo slot</div>`;
+  } else if(dayCount >= MAX_SLOTS_PER_DAY){
+    body += `<div class="warn-box">⚠️ Hai raggiunto il limite di ${MAX_SLOTS_PER_DAY} slot per oggi per questo gioco</div>`;
+  } else if(bks.length < 4){
+    body += `<div class="form-group"><label>Prenota per</label>
+      <div style="display:flex;gap:8px">
+        <button class="player-chip selected" id="btn2" onclick="selectSize(2)" style="flex:1">👥 2 giocatori</button>
+        <button class="player-chip" id="btn4" onclick="selectSize(4)" style="flex:1">👥👥 4 giocatori</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmBooking('${date}','${time}')">Prenota</button>`;
+  }
+
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('booking-modal').classList.remove('hidden');
+  window._modalSize = 2;
+}
+
+function selectSize(n){
+  window._modalSize = n;
+  document.getElementById('btn2').classList.toggle('selected',n===2);
+  document.getElementById('btn4').classList.toggle('selected',n===4);
+}
+
+function confirmBooking(date, time){
+  const bks = getSlotBookings(state.currentGame, date, time);
+  const k = slotKey(state.currentGame, date, time);
+  if(!state.bookings[k]) state.bookings[k]=[];
+  state.bookings[k].push({user:state.currentUser, for2:window._modalSize===2, ts:new Date().toISOString()});
+  const gameLabel = state.currentGame==='foosball'?'Calcio Balilla':'Ping Pong';
+  addLog('book', `${state.currentUser} → ${gameLabel} ${date} ${time} (${window._modalSize} giocatori)`);
+  closeModal();
+  renderBookingTab();
+}
+
+function cancelBooking(date, time, user){
+  if(user !== state.currentUser){alert('Solo chi ha prenotato può cancellare');return;}
+  const k = slotKey(state.currentGame, date, time);
+  if(!state.bookings[k]) return;
+  state.bookings[k] = state.bookings[k].filter(b=>b.user!==user);
+  const gameLabel = state.currentGame==='foosball'?'Calcio Balilla':'Ping Pong';
+  addLog('cancel', `${state.currentUser} ha cancellato ${gameLabel} ${date} ${time}`);
+  closeModal();
+  renderBookingTab();
+  renderMyBookings();
+}
+
+function closeModal(e){
+  if(e && e.target !== document.getElementById('booking-modal')) return;
+  document.getElementById('booking-modal').classList.add('hidden');
+}
+
+function renderMyBookings(){
+  let all = [];
+  Object.entries(state.bookings).forEach(([k,bks])=>{
+    bks.filter(b=>b.user===state.currentUser).forEach(b=>{
+      const [game,date,time] = k.split('|');
+      all.push({game,date,time,b});
+    });
+  });
+  all.sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+  if(!all.length){
+    document.getElementById('my-bookings-list').innerHTML = '<p style="color:var(--c-muted);text-align:center;padding:30px">Nessuna prenotazione attiva</p>';
+    return;
+  }
+  document.getElementById('my-bookings-list').innerHTML = all.map(({game,date,time,b})=>{
+    const d = new Date(date+'T12:00:00');
+    const df = d.toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short'});
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isPast = d < today;
+    return `<div class="my-booking-card" style="${isPast?'opacity:.6':''}">
+      <div class="my-booking-info">
+        <h4>${time} — ${df}</h4>
+        <p>${b.for2?'2 giocatori':'4 giocatori'}</p>
+        <span class="badge badge-${game}">${game==='foosball'?'⚽ Calcio Balilla':'🏓 Ping Pong'}</span>
+      </div>
+      ${!isPast?`<button class="cancel-small" onclick="cancelFromMine('${game}','${date}','${time}')">Cancella</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function cancelFromMine(game, date, time){
+  const k = slotKey(game, date, time);
+  if(!state.bookings[k]) return;
+  state.bookings[k] = state.bookings[k].filter(b=>b.user!==state.currentUser);
+  const prev = state.currentGame;
+  state.currentGame = game;
+  addLog('cancel', `${state.currentUser} ha cancellato ${game==='foosball'?'Calcio Balilla':'Ping Pong'} ${date} ${time}`);
+  state.currentGame = prev;
+  renderMyBookings();
+  renderBookingTab();
+}
+
+function renderLog(){
+  if(!state.logs.length){
+    document.getElementById('log-list').innerHTML='<p style="padding:20px;text-align:center;color:var(--c-muted)">Log vuoto</p>';
+    return;
+  }
+  document.getElementById('log-list').innerHTML = state.logs.map(l=>`
+    <div class="log-item">
+      <span class="log-time">${l.ts}</span>
+      <span class="log-type ${l.type}">${l.type}</span>
+      <span class="log-msg">${l.msg}</span>
+    </div>`).join('');
+}
+
+function clearLog(){
+  if(!confirm('Svuotare il log?')) return;
+  state.logs=[];
+  renderLog();
+}
+
+function submitReport(){
+  const device = document.getElementById('rep-device').value;
+  const date = document.getElementById('rep-date').value;
+  const time = document.getElementById('rep-time').value;
+  const text = document.getElementById('rep-text').value.trim();
+  if(!date||!text){alert('Compila tutti i campi');return;}
+  state.reports.unshift({user:state.currentUser,device,date,time,text,ts:new Date().toISOString()});
+  addLog('report', `${state.currentUser} → segnalazione ${device} ${date} ${time}`);
+  document.getElementById('rep-text').value='';
+  renderReports();
+  alert('Segnalazione inviata!');
+}
+
+function renderReports(){
+  if(!state.reports.length){
+    document.getElementById('reports-list').innerHTML='<p style="color:var(--c-muted);text-align:center;padding:20px">Nessuna segnalazione</p>';
+    return;
+  }
+  document.getElementById('reports-list').innerHTML = state.reports.map(r=>`
+    <div class="report-card">
+      <h4>${r.device}</h4>
+      <p>${r.text}</p>
+      <div class="report-meta">
+        <span class="tag">👤 ${r.user}</span>
+        <span class="tag">📅 ${r.date}</span>
+        <span class="tag">⏰ ${r.time}</span>
+        <span class="tag">${new Date(r.ts).toLocaleString('it-IT')}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdminUsers(){
+  document.getElementById('user-list-admin').innerHTML = state.users.map(u=>`
+    <div class="user-item">
+      <span>${u}</span>
+      ${u!=='Admin'?`<button class="remove-btn" onclick="removeUser('${u}')">×</button>`:''}
+    </div>`).join('');
+}
+
+function addUser(){
+  const n = document.getElementById('new-user-input').value.trim();
+  if(!n||state.users.includes(n)){alert('Nome non valido o già presente');return;}
+  state.users.push(n);
+  addLog('login', `Admin ha aggiunto utente: ${n}`);
+  document.getElementById('new-user-input').value='';
+  renderAdminUsers();
+}
+
+function removeUser(name){
+  if(!confirm(`Rimuovere ${name}?`)) return;
+  state.users = state.users.filter(u=>u!==name);
+  addLog('login', `Admin ha rimosso utente: ${name}`);
+  renderAdminUsers();
+}
+
+function blockSlot(){
+  const date = document.getElementById('block-date').value;
+  const game = document.getElementById('block-game').value;
+  const time = document.getElementById('block-time').value;
+  const reason = document.getElementById('block-reason').value;
+  if(!date){alert('Seleziona una data');return;}
+  state.blocked.push({date,game,time,reason});
+  addLog('block', `Admin ha bloccato ${game} ${date} ${time} — ${reason||'nessun motivo'}`);
+  renderBlockedSlots();
+  renderBookingTab();
+}
+
+function renderBlockedSlots(){
+  if(!state.blocked.length){
+    document.getElementById('blocked-list').innerHTML='<p style="font-size:12px;color:var(--c-muted)">Nessuno slot bloccato</p>';
+    return;
+  }
+  document.getElementById('blocked-list').innerHTML = state.blocked.map((b,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#fff8e1;border-radius:8px;margin-bottom:5px;font-size:12px">
+      <span>${b.game==='both'?'Entrambi':b.game==='foosball'?'Calcio Balilla':'Ping Pong'} — ${b.date} ${b.time} ${b.reason?'('+b.reason+')':''}</span>
+      <button onclick="unblockSlot(${i})" style="background:none;border:1px solid #ef9a9a;color:#c62828;padding:2px 7px;border-radius:4px;cursor:pointer;font-size:11px">Sblocca</button>
+    </div>`).join('');
+}
+
+function unblockSlot(i){
+  state.blocked.splice(i,1);
+  addLog('block', `Admin ha sbloccato uno slot`);
+  renderBlockedSlots();
+  renderBookingTab();
+}
+
+function renderAdminStats(){
+  let total = 0, foo = 0, ping = 0;
+  Object.entries(state.bookings).forEach(([k,v])=>{
+    total += v.length;
+    if(k.startsWith('foosball')) foo+=v.length;
+    else ping+=v.length;
+  });
+  document.getElementById('stats-grid').innerHTML = `
+    <div style="background:#e8f5e9;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:11px;color:#388e3c;margin-bottom:4px">Totale prenotazioni</div>
+      <div style="font-size:22px;font-weight:700;color:#1b5e20">${total}</div>
+    </div>
+    <div style="background:#e3f2fd;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:11px;color:#1565c0;margin-bottom:4px">⚽ Calcio Balilla</div>
+      <div style="font-size:22px;font-weight:700;color:#0d47a1">${foo}</div>
+    </div>
+    <div style="background:#fce4ec;border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:11px;color:#ad1457;margin-bottom:4px">🏓 Ping Pong</div>
+      <div style="font-size:22px;font-weight:700;color:#880e4f">${ping}</div>
+    </div>`;
+}
+
+// Init
+renderBookingTab();
+</script>
+</body>
+</html>
